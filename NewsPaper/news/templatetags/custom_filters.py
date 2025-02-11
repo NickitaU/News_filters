@@ -22,7 +22,6 @@ def currency(value, code='rub'):
 
 @register.filter
 def censor(text):
-    # Здесь вы можете изменить список запрещенных слов
     bad_words_list = ["Редиска", "редиска"]
 
     for bad_word in bad_words_list:
