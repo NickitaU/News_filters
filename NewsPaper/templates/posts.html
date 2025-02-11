@@ -28,7 +28,7 @@
 <tr>
     <td>{{ post.title|censor }}</td>
     <td>{{ post.some_datetime|date:"d, F, Y" }}</td>
-    <td>{{ post.text|censor }}</td>
+    <td>{{ post.text|censor|truncatechars:20 }}</td>
     <td>
         {% for category in post.category.all %}
             {{ category.name_category }}{% if not forloop.last %}, {% endif %}
