@@ -23,9 +23,7 @@ def currency(value, code='rub'):
 @register.filter
 def censor(text):
     bad_words_list = ["Редиска", "редиска"]
-
     for bad_word in bad_words_list:
         text = text.replace(bad_word, '*' * len(bad_word))
-
     return text
 

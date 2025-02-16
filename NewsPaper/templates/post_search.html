@@ -1,0 +1,21 @@
+{% load custom_filters %}
+
+<form method="get">
+    <input type="text" name="title" placeholder="Поиск по названию">
+    <select name="category">
+        <option value="">Все категории</option>
+        {% for category in categories %}
+            <option value="{{ category.id }}" {% if category.id == request.GET.category %}selected{% endif %}>
+                {{ category.name_category }}
+            </option>
+        {% endfor %}
+    </select>
+    <input type="date" name="some_datetime" value="{{ some_datetime }}">
+    <button type="submit">Искать</button>
+</form>
+
+<ul>
+    {% for post in posts %}
+        <li>{{ post.title|censor }} - {{ post.some_datetime }} - {{ post.category.all|join:", " }}</li>
+    {% endfor %}
+</ul>
