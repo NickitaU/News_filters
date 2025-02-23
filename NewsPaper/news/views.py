@@ -1,5 +1,5 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View
-from .models import Post,Category
+from .models import Post, Category
 from .filters import PostFilter
 from datetime import datetime
 from django.shortcuts import render
@@ -8,6 +8,19 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from datetime import datetime
 from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
+
+
+class IndexView(LoginRequiredMixin, TemplateView):
+    template_name = 'news/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_not_authors'] = not self.request.user.groups.filter(name='authors').exists()
+        return context
 
 
 class NewsList(ListView):
@@ -35,22 +48,28 @@ class NewsDetail(DetailView):
     context_object_name = 'post'
 
 
-class PostCreate(CreateView):
+class PostCreate(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+    permission_required = ('news.add_post',)
     form_class = PostForm
     model = Post
     template_name = 'post_eqit.html'
+    login_url = '/accounts/login/'
 
 
-class PostUpdate(UpdateView):
+class PostUpdate(PermissionRequiredMixin, LoginRequiredMixin, UpdateView):
+    permission_required = ('news.change_post',)
     form_class = PostForm
     model = Post
     template_name = 'post_eqit.html'
+    login_url = '/accounts/login/'
 
 
-class PostDelete(DeleteView):
+class PostDelete(PermissionRequiredMixin, LoginRequiredMixin,DeleteView):
+    permission_required = ('news.delete_post',)
     model = Post
     template_name = 'post_delete.html'
     success_url = reverse_lazy('news_list')
+    login_url = '/accounts/login/'
 
 
 class NewsSearchView(View):
@@ -85,3 +104,7 @@ class NewsSearchView(View):
         }
 
         return render(request, self.template_name, context)
+
+
+class ProtectedView(LoginRequiredMixin, TemplateView):
+    template_name = 'post_eqit.html'
