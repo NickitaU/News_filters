@@ -2,6 +2,7 @@ from django.urls import path
 # Импортируем созданное нами представление
 from .views import NewsList, NewsDetail, PostCreate, PostUpdate, PostDelete, NewsSearchView
 from .views import IndexView
+from .views import subscribe_to_category
 
 urlpatterns = [
     path('', IndexView.as_view()),
@@ -11,5 +12,6 @@ urlpatterns = [
     path('news/<int:pk>/update/', PostUpdate.as_view(), name='post_update'),
     path('news/<int:pk>/delete/', PostDelete.as_view(), name='post_delete'),
     path('search/', NewsSearchView.as_view(), name='news_search'),
+    path('subscribe/<int:category_id>/', subscribe_to_category, name='subscribe_to_category'),
 ]
 

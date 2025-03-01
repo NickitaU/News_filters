@@ -1,7 +1,6 @@
 {% extends 'flatpages/default.html' %}
 
-{% load custom_filters %}!
-
+{% load custom_filters %}
 {% load custom_tags %}
 
 {% block title %}
@@ -9,51 +8,53 @@
 {% endblock title %}
 
 {% block content %}
+    <div style="background-color: #f8f9fa; padding: 10px;">
+        <a href="http://127.0.0.1:8000/" style="text-decoration: none; color: #007bff;">Вернуться в профиль</a>
+        <a href="{% url 'post_create' %}" style="text-decoration: none; color: #28a745; margin-left: 10px;">Создать пост</a>
+    </div>
+
     <h1>Все Новости</h1>
 
-    {# Добавляем форму, которая объединяет набор полей, которые будут отправляться в запросе #}
     <form action="" method="get">
-        {# Переменная, которую мы передали через контекст, может сгенерировать нам форму с полями #}
         {{ filterset.form.as_p }}
-        {# Добавим кнопку отправки данных формы #}
         <input type="submit" value="Найти" />
     </form>
-    <h3>Количество новостей на данный момент: {{ posts|length }}</h3>
-    <!--<h3>{{ time_now|date:'d M Y' }}</h3>-->
-    <h3>{% current_time ' %d %b %Y' %}</h3>
-    <h3> {{ info|default_if_none:"Инфосвежатина только у нас!" }} </h3>
+
+    <h3>Общее количество новостей: {{ total_news_count }}</h3>
+    <h3>Количество новостей на данной странице: {{ posts|length }}</h3>
+    <h3>{% current_time '%d %b %Y' %}</h3>
+    <h3>{{ info|default_if_none:"Инфосвежатина только у нас!" }}</h3>
     <hr>
+
     {% if posts %}
        <table>
-           <tr>
-               <td>Заголовок</td>
-               <td>Дата публикации</td>
-               <td>Текст</td>
-               <td>Категория</td>
-           </tr>
-
-{% for post in posts %}
-<tr>
-    <td>{{ post.title|censor }}</td>
-    <td>{{ post.some_datetime|date:"d, F, Y" }}</td>
-    <td>{{ post.text|censor|truncatechars:20 }}</td>
-    <td>
-        {% for category in post.category.all %}
-            {{ category.name_category }}{% if not forloop.last %}, {% endif %}
+        <tr>
+            <td>№</td>
+            <td>Заголовок</td>
+            <td>Дата публикации</td>
+            <td>Текст</td>
+            <td>Категория</td>
+        </tr>
+        {% for post in posts %}
+            <tr>
+                <td><a href="{{ post.get_absolute_url }}">{{ forloop.counter }}</a></td>
+                <td><a href="{{ post.get_absolute_url }}">{{ post.title|censor }}</a></td>
+                <td>{{ post.some_datetime|date:"d, F, Y" }}</td>
+                <td>{{ post.text|censor|truncatechars:20 }}</td>
+                <td>
+                    {% for category in post.category.all %}
+                        {{ category.name_category }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
         {% endfor %}
-    </td>
-</tr>
-{% endfor %}
-       </table>
+    </table>
     {% else %}
-        <h2>Товаров нет!</h2>
+        <h2>Новостей на данный момент нет!</h2>
     {% endif %}
 
-    {# Добавляем пагинацию на страницу #}
-
-   {# Информация о предыдущих страницах #}
+    {# Пагинация #}
    {% if page_obj.has_previous %}
-       {# Для каждой ссылки пагинации указываем обработку через новый тег #}
        <a href="?{% url_replace page=1 %}">1</a>
        {% if page_obj.previous_page_number != 1 %}
            ...
@@ -70,5 +71,4 @@
            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
        {% endif %}
    {% endif %}
-
 {% endblock content %}

@@ -2,13 +2,49 @@
 {% load custom_filters %}
 {% load custom_tags %}
 
-{% block title %}
-Новость:
-{% endblock title %}
-
 {% block content %}
-    <h1>{{post.title|censor}}</h1>
-<h3>Дата сегодня: {% current_time '%d %b %Y' %}</h3>
-<h3>Дата публикации: {{ post.some_datetime|date:"d.m.Y" }}</h3>
-<h3>Текст статьи:{{ post.text|censor }}</h3>
+    <div>
+        <a href="{% url 'news_list' %}" class="btn btn-secondary">Вернуться к новостям</a>
+    </div>
+
+    <h1>{{ post.title|censor }}</h1>
+    <h3>Дата публикации: {{ post.some_datetime|date:"d.m.Y" }}</h3>
+
+    <h3>Текст статьи:</h3>
+    <div style="margin-left: 20px;">  <!-- Отступ слева -->
+        {{ post.text|censor }}
+    </div>
+
+    <h3>Автор статьи:</h3>
+    <div style="margin-left: 20px;">
+        {{ post.author.user.username }}
+    </div>
+
+    <h3>Категории:</h3>
+    <div style="margin-left: 20px;">
+        {% for category in post.category.all %}
+            <span>{{ category.name_category }}</span>
+            {% if user.is_authenticated %}
+                <form action="{% url 'subscribe_to_category' category.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">
+                        {% if user in category.subscribers.all %}Отписаться{% else %}Подписаться{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="{% url 'post_update' post.pk %}" class="btn btn-primary">Редактировать</a>
+        <a href="{% url 'post_delete' post.pk %}" class="btn btn-danger">Удалить</a>
+    </div>
+
+    {% if user.is_authenticated %}
+        <div style="margin-top: 20px;">
+            <h4>Комментарии:</h4>
+            <!-- Здесь можно добавить секцию для комментариев -->
+            <p>Функция комментариев будет реализована позже.</p>
+        </div>
+    {% endif %}
 {% endblock content %}
