@@ -49,7 +49,6 @@ class Category(models.Model):
         return self.name_category.title()
 
 
-
 class Post(models.Model):
     some_datetime = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)

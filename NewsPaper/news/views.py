@@ -1,5 +1,6 @@
+import logging
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View
-from .models import Post, Category, Author
+from .models import Post, Category, Author, PostCategory
 from .filters import PostFilter
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
@@ -12,7 +13,11 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .signals import receiver
+from django.db import transaction
+from django.dispatch import Signal
 
 @login_required
 def subscribe_to_category(request, category_id):
@@ -22,24 +27,22 @@ def subscribe_to_category(request, category_id):
         category.subscribers.remove(request.user)
     else:
         category.subscribers.add(request.user)
-    post = category.post_set.first()  # Получаем первый пост из этой категории
 
-    if post:
-        return redirect('news_detail', pk=post.id)  # Перенаправление на страницу поста
-    else:
-        return redirect('news_list')  # Если постов нет, перенаправляем на страницу категорий или другую нужную страницу
+    return redirect('news_list')  # Перенаправление на страницу поста  # Если постов нет, перенаправляем на нужную страницу
 
 
 def notify_subscribers(post):
     for category in post.category.all():
         for user in category.subscribers.all():
-            send_mail(
-                subject=post.title,
-                message=f"Здравствуй, {user.username}. Новая статья в твоём любимом разделе!\n{post.text[:50]}...",
-                from_email='n.ujegov@yandex.ru.com',
-                recipient_list=[user.email],
-                html_message=f'<strong>{post.title}</strong><br>{post.text[:50]}...'
-            )
+            try:
+                send_mail(
+                    subject=post.title,
+                    message=f"Здравствуй, {user.username}. Новая статья в твоём любимом разделе!\n{post.text}...",
+                    from_email='n.ujegov@yandex.ru',
+                    recipient_list=[user.email],
+                )
+            except Exception as e:
+                print(f"Ошибка при отправке сообщения {user.email}: {e}")
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -80,18 +83,26 @@ class NewsDetail(DetailView):
         return context
 
 
-class PostCreate(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
-    permission_required = ('news.add_post',)
-    form_class = PostForm
+class PostCreate(CreateView):
     model = Post
+    form_class = PostForm
     template_name = 'post_edit.html'
-    login_url = '/accounts/login/'
 
     def form_valid(self, form):
-        post = form.save(commit=False)  # Создаем объект, но не сохраняем в БД
-        post.author = Author.objects.get(user=self.request.user)  # Получаем автора через текущего пользователя
-        post.save()  # Теперь сохраняем пост
-        notify_subscribers(post)  # Уведомляем подписчиков
+        from .signals import post_created
+        # Получаем выбранные категории
+        categories_ids = self.request.POST.getlist('category')
+        categories = Category.objects.filter(id__in=categories_ids)
+
+        # Сначала сохраняем пост
+        post = form.save(commit=False)
+        post.author = Author.objects.get(user=self.request.user)
+        post.save()  # Сохраняем пост
+
+        # Связываем категории
+        post.category.set(categories)
+        post_created.send(sender=self.__class__, instance=post, created=True)
+
         return super().form_valid(form)
 
 
