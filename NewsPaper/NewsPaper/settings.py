@@ -44,12 +44,12 @@ INSTALLED_APPS = [
     'django_filters',
     'sign',
     'allauth',
+    "django_apscheduler",
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.yandex',
     'news.apps.PostCreateConfig',
-    'django_apscheduler',
 ]
 
 LOGGING = {
@@ -179,12 +179,12 @@ ACCOUNT_FORMS = {'signup': 'sign.models.CommonSignupForm'}
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'  # адрес сервера Яндекс-почты для всех один и тот же
 EMAIL_PORT = 465  # порт smtp сервера тоже одинаковый
-<<<<<<< HEAD
 EMAIL_HOST_USER = ''  # ваше имя пользователя, например, если ваша почта user@yandex.ru, то сюда надо писать user, иными словами, это всё то что идёт до собаки
 EMAIL_HOST_PASSWORD = ''  # пароль от почты
-=======
-EMAIL_HOST_USER = 'Тут почта'  # ваше имя пользователя, например, если ваша почта user@yandex.ru, то сюда надо писать user, иными словами, это всё то что идёт до собаки
-EMAIL_HOST_PASSWORD = 'Тут мой код'  # пароль от почты
->>>>>>> 558c4eed69ffce9249a8e1c51a428d88a44da4e6
 EMAIL_USE_SSL = True  # Яндекс использует ssl, подробнее о том, что это, почитайте в дополнительных источниках, но включать его здесь обязательно
 
+# формат даты, которую будет воспринимать наш задачник (вспоминаем модуль по фильтрам)
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+
+# если задача не выполняется за 25 секунд, то она автоматически снимается, можете поставить время побольше, но как правило, это сильно бьёт по производительности сервера
+APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds

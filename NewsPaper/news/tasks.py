@@ -1,5 +1,4 @@
-from apscheduler.schedulers.background import BackgroundScheduler
+from django.core.mail import mail_managers
 
-
-news_scheduler = BackgroundScheduler()
-news_scheduler.add_job()
+def send_mails():
+    print("Hello from background task!")
