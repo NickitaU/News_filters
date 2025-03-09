@@ -7,8 +7,8 @@ from django.db.models.signals import Signal
 post_created = Signal()
 
 
-@receiver(post_created)
-def notify_subscribers_on_post_create(instance, created, **kwargs):
-    if created:
-        print("Сигнал сработал, пост создан!")  # Добавлено для отладки
-        notify_subscribers(instance)
+#@receiver(post_created)
+#def notify_subscribers_on_post_create(instance, created, **kwargs):
+    #if created:
+    #   print("Сигнал сработал, пост создан!")  # Добавлено для отладки
+     #   notify_subscribers(instance)

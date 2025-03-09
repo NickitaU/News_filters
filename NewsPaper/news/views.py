@@ -18,6 +18,10 @@ from django.dispatch import receiver
 from .signals import receiver
 from django.db import transaction
 from django.dispatch import Signal
+from django.http import HttpResponse
+from .tasks import notify_subscribers_task
+
+
 
 @login_required
 def subscribe_to_category(request, category_id):
@@ -89,8 +93,6 @@ class PostCreate(CreateView):
     template_name = 'post_edit.html'
 
     def form_valid(self, form):
-        from .signals import post_created
-        # Получаем выбранные категории
         categories_ids = self.request.POST.getlist('category')
         categories = Category.objects.filter(id__in=categories_ids)
 
@@ -101,7 +103,9 @@ class PostCreate(CreateView):
 
         # Связываем категории
         post.category.set(categories)
-        post_created.send(sender=self.__class__, instance=post, created=True)
+
+        # Вызываем задачу для отправки уведомлений
+        notify_subscribers_task.delay(post.id)  # Запускаем задачу асинхронно
 
         return super().form_valid(form)
 
